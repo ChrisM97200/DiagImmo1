@@ -62,6 +62,9 @@ with st.expander("Rentabilité"):
 
     total_charges=taxe_fonciere+charge_copro+assurance_pno+frais_gestion+frais_conciergerie+frais_compta+impôt+autre_frais
 
+    if prix_acquisition==0:
+        prix_acquisition=1
+
     rdmt_brut=revenu_loc_classique/prix_acquisition
     rdmt_net=(revenu_loc_classique-charge_copro)/(prix_acquisition+total_tvx)
 
