@@ -41,7 +41,7 @@ with st.expander("Financement") :
     pret_net=pret_brut+frais_notaire+frais_bq-apport
     st.text("montant total du crédit : "+str(pret_net))
     duree_pret=20
-    taux_pret=5.94
+    taux_pret=st.number_input("Taux emprunt",5)
     mens_pret_m=round((pret_net*taux_pret/100/12)/(1-pow(1+(taux_pret/100)/12,-duree_pret*12)),2)
     mens_pret_a=mens_pret_m*12
 
