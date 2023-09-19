@@ -161,7 +161,7 @@ with st.expander("Enrichissement latent"):
     #    x=st.checkbox(str(i))
      #   st.write(x)
       #  z.append(x)
-    #st.write(z)
+    #  st.write(z)
 
 
 if st.button("enregistrer"):
