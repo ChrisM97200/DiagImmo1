@@ -1,7 +1,23 @@
 import streamlit as st
 import pandas as pd
 from csv import writer
+import matplotlib.pyplot as plt
+
 st.write("Analyse bien immobilier")
+
+with st.sidebar:
+    taux_pret = st.number_input("Taux emprunt", min_value=0.0, step=0.5, value=4.0)
+    taux_notaire = st.number_input("Taux frais de notaire", min_value=0.0, step=0.5, value=8.0)
+    taux_progr_marche = st.number_input("Taux emprunt", min_value=0.0, step=0.5, value=1.5)
+    duree_pret=st.slider("durée prêt",min_value=0,max_value=25,value=20,step=1)
+
+    st.text("analyse locatif au m²")
+    col1,col2 = st.columns(2)
+    with col1:
+        loc_min=st.number_input("loyer minimum m²",min_value=10,step=1)
+    with col2:
+        loc_max=st.number_input("loyer maximum m²",min_value=loc_min,step=1)
+
 
 with st.expander("infos bien") :
     nom_bien=st.text_input("Bien")
@@ -9,6 +25,10 @@ with st.expander("infos bien") :
     localisation=st.text_input("Adresse du bien")
     surface=st.number_input("Surface",min_value=0,step=10)
     prix_affiché=st.number_input("Prix affiché",min_value=0,step=1000)
+
+
+
+
 
     if surface ==0:
         surface=1
@@ -28,7 +48,7 @@ with st.expander("Financement") :
     taux_nego=st.number_input("Taux de négociation %",min_value=0,step=1)
     nego=prix_affiché*taux_nego/100
     st.text("négociation : " + str(nego) )
-    taux_notaire=8
+
     prix_acquisition = prix_affiché-nego
     frais_notaire =prix_acquisition*taux_notaire/100
     st.text("pris acquisition : "+ str(prix_acquisition))
@@ -40,8 +60,8 @@ with st.expander("Financement") :
     st.text("frais bancaires : "+str(frais_bq))
     pret_net=pret_brut+frais_notaire+frais_bq-apport
     st.text("montant total du crédit : "+str(pret_net))
-    duree_pret=20
-    taux_pret=st.number_input("Taux emprunt",5)
+
+
     mens_pret_m=round((pret_net*taux_pret/100/12)/(1-pow(1+(taux_pret/100)/12,-duree_pret*12)),2)
     mens_pret_a=mens_pret_m*12
 
@@ -50,15 +70,36 @@ with st.expander("Financement") :
 
 
 with st.expander("Rentabilité"):
-    revenu_loc_classique=st.number_input("Revenus location classique")
-    taxe_fonciere=st.number_input("Taxe fonciere")
-    charge_copro=st.number_input("charges de copropriété")
-    assurance_pno=st.number_input("assurance")
-    frais_gestion=st.number_input("frais de gestion")
-    frais_conciergerie=st.number_input("frais de conciergerie")
-    frais_compta=st.number_input("frais de comptabilité")
-    impôt=st.number_input("impôt")
-    autre_frais=st.number_input("autres frais")
+    loc_m2 = st.slider("valeur loyer au m²", min_value=loc_min, max_value=loc_max)
+    revenu_loc = loc_m2 * surface
+
+    annuel, mensuel=st.columns(2)
+
+    with annuel :
+        st.text("Revenu annuel")
+        revenu_loc_classique=st.number_input("Revenus location classique à l'année",value=revenu_loc*12)
+        taxe_fonciere=st.number_input("Taxe fonciere à l'année")
+        charge_copro=st.number_input("charges de copropriété à l'année")
+        assurance_pno=st.number_input("assurance à l'année")
+        frais_gestion=st.number_input("frais de gestion à l'année")
+        frais_conciergerie=st.number_input("frais de conciergerie à l'année")
+        frais_compta=st.number_input("frais de comptabilité à l'année")
+        impôt=st.number_input("impôt à l'année")
+        autre_frais=st.number_input("autres frais à l'année")
+
+    with mensuel:
+        st.text("Revenu mensuel")
+        revenu_loc_classique_m = st.number_input("Revenus location classique",value=revenu_loc_classique/12)
+        taxe_fonciere_m = st.number_input("Taxe fonciere",value=taxe_fonciere/12)
+        charge_copro_m = st.number_input("charges de copropriété",value=charge_copro/12)
+        assurance_pno_m = st.number_input("assurance",value=assurance_pno/12)
+        frais_gestion_m = st.number_input("frais de gestion",value=frais_gestion/12)
+        frais_conciergerie_m = st.number_input("frais de conciergerie",value=frais_conciergerie/12)
+        frais_compta_m = st.number_input("frais de comptabilité",value=frais_compta/12)
+        impôt_m = st.number_input("impôt",value=impôt/12)
+        autre_frais_m = st.number_input("autres frais",value=autre_frais/12)
+
+
 
     total_charges=taxe_fonciere+charge_copro+assurance_pno+frais_gestion+frais_conciergerie+frais_compta+impôt+autre_frais
 
@@ -78,19 +119,20 @@ with st.expander("Rentabilité"):
     st.text("cashflow mensuel : "+str(cash_mensuel))
 
 with st.expander("Enrichissement latent"):
-    annee=5
-    taux_progr_marche=1.5
+    #annee=5
+
+
     def capital_rembourse(annee):
-        round(pret_net*(pow(1+taux_pret/100/12,annee*12)-1)/(pow(1+taux_pret/100/12,duree_pret*12)-1),2)
-        return
+        capi=round(pret_net*(pow(1+taux_pret/100/12,annee*12)-1)/(pow(1+taux_pret/100/12,duree_pret*12)-1))
+        return capi
 
     def total_cashflow(annee):
-        round(cash_annuel*annee,2)
-        return
+        cf=round(cash_annuel*annee)
+        return cf
 
     def plus_value_potentielle(annee):
-        round((pret_net+apport)*pow(1+taux_progr_marche/100,annee)-(pret_net+apport),2)
-        return
+        pv=round((pret_net+apport)*pow(1+taux_progr_marche/100,annee)-(pret_net+apport))
+        return pv
 
 
     st.text("a 5 ans  : capital rembourse : "+str(capital_rembourse) +" cashflow :"+str(total_cashflow)+" PV :"+ str(plus_value_potentielle) )
@@ -98,26 +140,28 @@ with st.expander("Enrichissement latent"):
     table=list(range(1,duree_pret+1))
     df=pd.DataFrame(table, columns=["Années d'amortissement"])
 
-    #st.write(df)
+    st.write(capital_rembourse(5))
 
-    #df["capital"]=df["Années d'amortissement"].apply(capital_rembourse)
-    #df["cashflow"]=df["Années d'amortissement"].apply(total_cashflow)
-    #df["PV"]=df["Années d'amortissement"].apply(plus_value_potentielle)
+    df["capital"]=df["Années d'amortissement"].apply(capital_rembourse)
+    df["cashflow"]=df["Années d'amortissement"].apply(total_cashflow)
+    df["Plus-value latente"]=df["Années d'amortissement"].apply(plus_value_potentielle)
+    df["Enrichissement latent"]=df["capital"]+ df["cashflow"]+df["Plus-value latente"]
+    df=df.set_index("Années d'amortissement")
 
     st.write(df)
 
-
-with st.expander("Questions"):
-    a=[1,2,3]
-    z=[]
-    for i in a:
-        x=st.checkbox(str(i))
-        st.write(x)
-        z.append(x)
-    st.write(z)
+    plt.stackplot(df.index,df["capital"],df["cashflow"],df["Plus-value latente"],labels=["capital","cashflow","plus-value latente"])
+    st.pyplot(df[["capital","cashflow","Plus-value latente"]].plot.area(stacked=True).figure)
 
 
-
+#with st.expander("Questions"):
+ #   a=[1,2,3]
+  #  z=[]
+   # for i in a:
+    #    x=st.checkbox(str(i))
+     #   st.write(x)
+      #  z.append(x)
+    #st.write(z)
 
 
 if st.button("enregistrer"):
